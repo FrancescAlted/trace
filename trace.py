@@ -50,6 +50,10 @@ root_url = ""
 visited_urls = []
 "The URLs that are already visited."
 
+debug = False
+"Debug flag (only for developers)"
+
+
 class ReturnLinks(HTMLParser):
     """Helper class to retrieve reference links."""
 
@@ -72,7 +76,8 @@ class ReturnLinks(HTMLParser):
                     # probably incomplete)
                     if '?' in value: return
                     if '#' in value: return
-                    init_value = value
+                    if debug:
+                        init_value = value
                     # Avoid external references
                     if value.startswith("//"):
                         return
@@ -93,7 +98,8 @@ class ReturnLinks(HTMLParser):
                     if value not in visited_urls:
                         self.links.append(value)
                         visited_urls.append(value)
-                        #print("init, final-->", init_value, value)
+                        if debug:
+                            print("init, final-->", init_value, value)
 
 
 def discover_links(url_):

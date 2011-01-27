@@ -45,13 +45,8 @@ from httplib import InvalidURL
 
 currentlevel = 1
 "The current level in hierarchy."
-root_url = None
-"The root URL."
 visited_urls = []
 "The URLs that are already visited."
-outfile = None
-"The output file."
-
 debug = False
 "Debug flag (only for developers)"
 
@@ -76,8 +71,11 @@ class ReturnLinks(HTMLParser):
                 if name == 'href':
                     # Many different exceptions here (a bit crazy, and
                     # probably incomplete)
-                    if '?' in value: return
-                    if '#' in value: return
+                    if (not dynamic_urls) and ('?' in value):
+                        return
+                    # Internal references are not listed by default
+                    if '#' in value:
+                        return
                     if debug:
                         init_value = value
                     # Avoid external references
@@ -162,16 +160,19 @@ def print_links(url_iter):
 if __name__ == "__main__":
     import optparse
 
+    # Deal with options
     usage = "usage: %prog [options] url"
     p = optparse.OptionParser(usage=usage)
 
     p.add_option("-l", type="int", dest="maxlevel", default=0)
     p.add_option("-o", type="string", dest="outfile", default=sys.stdout)
+    p.add_option("-D", action="store_true", dest="dynamic_urls")
     opts, args = p.parse_args()
     maxlevel = opts.maxlevel
     outfile = opts.outfile
     if type(outfile) is str:
         outfile = open(outfile, 'w')
+    dynamic_urls = opts.dynamic_urls
 
     # Arguments in command line?
     if len(args) == 0:

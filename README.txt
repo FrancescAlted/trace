@@ -21,8 +21,10 @@ should produce a text file like::
 
 Note that URLs will not be duplicated, and that dynamical pages are
 not included.  The references to external URLs are filtered out.  You
-can select an output file with the '-o' flag.  For an usage help,
-type::
+can select an output file with the '-o' flag.  Also, you can force the
+listing of dynamic pages by using the flag '-D'.
+
+For an usage help, type::
 
   $ trace.py -h
 

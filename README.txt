@@ -19,6 +19,9 @@ should produce a text file like::
       ...
     ...
 
+Note that URLs will not be duplicated, and that dynamical pages are
+not included.
+
 When Ctrl-C is pressed, the state is saved (using pickle). The script can be
 continued from the previously saved state by::
 

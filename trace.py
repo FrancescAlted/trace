@@ -45,10 +45,12 @@ from httplib import InvalidURL
 
 currentlevel = 1
 "The current level in hierarchy."
-root_url = ""
+root_url = None
 "The root URL."
 visited_urls = []
 "The URLs that are already visited."
+outfile = None
+"The output file."
 
 debug = False
 "Debug flag (only for developers)"
@@ -139,8 +141,10 @@ def print_links(url_iter):
     """Recursively print all references hanging from `url`."""
     global currentlevel
 
+    if debug:
+        print("currentlevel, maxlevel-->", currentlevel, maxlevel)
+
     # Check if we reached the maximum level
-    #print("currentlevel, maxlevel-->", currentlevel, maxlevel)
     if currentlevel > maxlevel-1:
         return
     # No, increment the level in one and continue
@@ -148,8 +152,7 @@ def print_links(url_iter):
 
     links = discover_links(url_iter)
     for link in links:
-        print("  "*currentlevel + link)
-
+        print("  "*currentlevel + link, file=outfile)
 
     # Iterate over the child URLs
     for link in links:
@@ -158,12 +161,17 @@ def print_links(url_iter):
 
 if __name__ == "__main__":
     import optparse
+
     usage = "usage: %prog [options] url"
     p = optparse.OptionParser(usage=usage)
 
-    p.add_option("-l", type="int", dest="maxlevel", default=1)
+    p.add_option("-l", type="int", dest="maxlevel", default=0)
+    p.add_option("-o", type="string", dest="outfile", default=sys.stdout)
     opts, args = p.parse_args()
     maxlevel = opts.maxlevel
+    outfile = opts.outfile
+    if type(outfile) is str:
+        outfile = open(outfile, 'w')
 
     # Arguments in command line?
     if len(args) == 0:
@@ -175,7 +183,7 @@ if __name__ == "__main__":
         root_url += '/'
 
     # First deal with the root
-    print(root_url)
+    print(root_url, file=outfile)
     visited_urls.append(root_url)
     # Then all the rest
     print_links(root_url)

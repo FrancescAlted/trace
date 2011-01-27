@@ -74,18 +74,17 @@ class ReturnLinks(HTMLParser):
                     if '#' in value: return
                     init_value = value
                     # Avoid external references
-                    if ( value.startswith("http://") and
-                         not value.startswith(root_url) ):
+                    if value.startswith("//"):
+                        return
+                    elif ( value.startswith("http://") and
+                           not value.startswith(root_url) ):
                         return
                     # Check relative URLs
                     elif value.startswith("../"):
                         value = os.path.join(self.url_base, value)
                     # Check absolute URLs
                     elif value.startswith("/"):
-                        skip = 1
-                        if value.startswith("//"):
-                            skip = 2
-                        value = root_url + value[skip:]
+                        value = root_url + value[1:]
                     # Check if the url is complete
                     if not ( value.startswith("http://") or
                              value.startswith("https://") ):
@@ -94,7 +93,7 @@ class ReturnLinks(HTMLParser):
                     if value not in visited_urls:
                         self.links.append(value)
                         visited_urls.append(value)
-                        print("init, final-->", init_value, value)
+                        #print("init, final-->", init_value, value)
 
 
 def discover_links(url_):
@@ -135,15 +134,16 @@ def print_links(url_iter):
     global currentlevel
 
     # Check if we reached the maximum level
-    if currentlevel > maxlevel:
+    #print("currentlevel, maxlevel-->", currentlevel, maxlevel)
+    if currentlevel > maxlevel-1:
         return
+    # No, increment the level in one and continue
+    currentlevel += 1
 
     links = discover_links(url_iter)
     for link in links:
         print("  "*currentlevel + link)
 
-    # No, increment the level in one and continue
-    currentlevel += 1
 
     # Iterate over the child URLs
     for link in links:

@@ -142,7 +142,7 @@ def print_links(url_iter):
     # Increment the level in one
     currentlevel += 1
     # Check if we reached the maximum level
-    if currentlevel > maxlevel:
+    if (maxlevel > 0) and (currentlevel > maxlevel):
         return
 
     links = discover_links(url_iter)
@@ -185,6 +185,11 @@ if __name__ == "__main__":
     # First deal with the root
     print(root_url, file=outfile)
     visited_urls.append(root_url)
+
     # Then all the rest
-    print_links(root_url)
+    try:
+        print_links(root_url)
+    except KeyboardInterrupt:
+        print(" ...tracing interrupted!")
+
 

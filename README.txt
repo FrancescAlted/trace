@@ -22,15 +22,16 @@ should produce a text file like::
 Note that URLs will not be duplicated, and that dynamical pages are
 not included.  The references to external URLs are filtered out.  You
 can select an output file with the '-o' flag.  Also, you can force the
-listing of dynamic pages by using the flag '-D'.
+listing of dynamic pages by using the flag '-d'.
 
 For an usage help, type::
 
   $ trace.py -h
 
-When Ctrl-C is pressed, the state is saved (using pickle). The script can be
-continued from the previously saved state by::
+When Ctrl-C is pressed, the state is saved (using pickle).  The script
+can be continued from the previously saved state by::
 
   $ trace.py -continue
 
 
+Francesc Alted

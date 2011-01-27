@@ -42,13 +42,10 @@ from httplib import InvalidURL
 #
 # Global variables
 #
-
 currentlevel = 1
 "The current level in hierarchy."
 visited_urls = []
 "The URLs that are already visited."
-debug = False
-"Debug flag (only for developers)"
 
 
 class ReturnLinks(HTMLParser):
@@ -166,13 +163,15 @@ if __name__ == "__main__":
 
     p.add_option("-l", type="int", dest="maxlevel", default=0)
     p.add_option("-o", type="string", dest="outfile", default=sys.stdout)
-    p.add_option("-D", action="store_true", dest="dynamic_urls")
+    p.add_option("-d", action="store_true", dest="dynamic_urls")
+    p.add_option("-D", action="store_true", dest="debug")
     opts, args = p.parse_args()
     maxlevel = opts.maxlevel
     outfile = opts.outfile
     if type(outfile) is str:
         outfile = open(outfile, 'w')
     dynamic_urls = opts.dynamic_urls
+    debug = opts.debug
 
     # Arguments in command line?
     if len(args) == 0:

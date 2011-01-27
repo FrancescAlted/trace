@@ -139,11 +139,11 @@ def print_links(url_iter):
     if debug:
         print("currentlevel, maxlevel-->", currentlevel, maxlevel)
 
-    # Check if we reached the maximum level
-    if currentlevel > maxlevel-1:
-        return
-    # No, increment the level in one and continue
+    # Increment the level in one
     currentlevel += 1
+    # Check if we reached the maximum level
+    if currentlevel > maxlevel:
+        return
 
     links = discover_links(url_iter)
     for link in links:

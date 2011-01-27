@@ -56,12 +56,12 @@ class ReturnLinks(HTMLParser):
     def __init__(self):
         self.links = []
         self.maxlevel = 0  # default is not maxlevel
-        self.url_base = ""
+        self.base_url = ""
         HTMLParser.__init__(self)
 
-    def set_url_base(self, url_base):
+    def set_base_url(self, base_url):
         """Set the URL base."""
-        self.url_base = os.path.dirname(url_base)
+        self.base_url = os.path.dirname(base_url)
 
     def handle_starttag(self, tag, attrs):
         """Retrieve <a href=...> links and populate `links` attribute."""
@@ -81,7 +81,7 @@ class ReturnLinks(HTMLParser):
                         return
                     # Check relative URLs
                     elif value.startswith("../"):
-                        value = os.path.join(self.url_base, value)
+                        value = os.path.join(self.base_url, value)
                     # Check absolute URLs
                     elif value.startswith("/"):
                         value = root_url + value[1:]
@@ -101,7 +101,7 @@ def discover_links(url_):
 
     # Setup the URL discoverer
     rlinks = ReturnLinks()
-    rlinks.set_url_base(url_)
+    rlinks.set_base_url(url_)
 
     # Read the URL
     try:
@@ -167,6 +167,10 @@ if __name__ == "__main__":
     root_url = sys.argv[1]
     if not root_url.endswith('/'):
         root_url += '/'
+
+    # First deal with the root
     print(root_url)
+    visited_urls.append(root_url)
+    # Then all the rest
     print_links(root_url)
 

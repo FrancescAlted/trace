@@ -34,18 +34,21 @@ if ( (python_version == 2 and sys.version_info[1] < 6) or
 if python_version == 2:
     from HTMLParser import HTMLParser, HTMLParseError
     from urllib2 import urlopen, HTTPError
+    from cPickle import dump, load
 else:
     from html.parser import HTMLParser, HTMLParseError
     from urllib.request import urlopen, HTTPError
+    from pickle import dump, load
+
 from httplib import InvalidURL
 
 #
 # Global variables
 #
-currentlevel = 1
-"The current level in hierarchy."
 visited_urls = []
 "The URLs that are already visited."
+printed_urls = []
+"The already printed URLs."
 
 
 class ReturnLinks(HTMLParser):
@@ -137,6 +140,7 @@ def discover_links(url_):
 def print_links(url_iter):
     """Recursively print all references hanging from `url`."""
     global currentlevel
+    global printed_urls
 
     if debug:
         print("currentlevel, maxlevel-->", currentlevel, maxlevel)
@@ -144,12 +148,17 @@ def print_links(url_iter):
     # Increment the level in one
     currentlevel += 1
     # Check if we reached the maximum level
-    if (maxlevel > 0) and (currentlevel > maxlevel):
+    if (maxlevel > 0) and (currentlevel > maxlevel-1):
         return
 
-    links = discover_links(url_iter)
-    for link in links:
-        print("  "*currentlevel + link, file=outfile)
+    if type(url_iter) is list:
+        # We are continuing
+        links = url_iter
+    else:
+        links = discover_links(url_iter)
+        for link in links:
+            print("  "*currentlevel + link, file=outfile)
+        printed_urls = links
 
     # Iterate over the child URLs
     for link in links:
@@ -165,33 +174,74 @@ if __name__ == "__main__":
 
     p.add_option("-l", type="int", dest="maxlevel", default=0)
     p.add_option("-o", type="string", dest="outfile", default=sys.stdout)
+    p.add_option("-f", type="string", dest="dumpfile", default="trace.dump")
     p.add_option("-d", action="store_true", dest="dynamic_urls")
     p.add_option("-D", action="store_true", dest="debug")
+    p.add_option("--continue", action="store_true", dest="continue_")
+
     opts, args = p.parse_args()
+    continue_ = opts.continue_
+    dumpfile = opts.dumpfile
+    currentlevel = 0  # default current level
+
+    if continue_:
+        # Continuing.  Retrieve the previous state.
+        f = open(dumpfile, "rb")
+        state = load(f)
+        f.close()
+        maxlevel = state['maxlevel']
+        currentlevel = state['currentlevel'] - 1
+        root_url = state['root_url']
+        outfile = state['outfile']
+        dynamic_urls = state['dynamic_urls']
+        visited_urls = state['visited_urls']
+        printed_urls = state['printed_urls']
+        print("printed_urls-->", printed_urls)
+
+        print("Continuing trace for %s starting from level %d" %
+              (root_url, currentlevel+1))
+
+    # Override with possible new options
     maxlevel = opts.maxlevel
     outfile = opts.outfile
-    if type(outfile) is str:
-        outfile = open(outfile, 'w')
     dynamic_urls = opts.dynamic_urls
     debug = opts.debug
 
-    # Arguments in command line?
-    if len(args) == 0:
-        print("pass one url at least!")
-        sys.exit()
+    if type(outfile) is str:
+        outfile = open(outfile, 'w')
 
-    root_url = sys.argv[1]
-    if not root_url.endswith('/'):
-        root_url += '/'
+    if not continue_:
+        # Arguments in command line?
+        if len(args) == 0:
+            print("pass one url at least!")
+            sys.exit()
 
-    # First deal with the root
-    print(root_url, file=outfile)
-    visited_urls.append(root_url)
+        # First deal with the root
+        root_url = sys.argv[1]
+        if not root_url.endswith('/'):
+            root_url += '/'
+        print(root_url, file=outfile)
+        url_iter = root_url
+        visited_urls.append(root_url)
+    else:
+        url_iter = printed_urls
 
     # Then all the rest
     try:
-        print_links(root_url)
+        print_links(url_iter)
     except KeyboardInterrupt:
-        print(" ...tracing interrupted!")
-
+        print(" ...tracing interrupted in level %d!", currentlevel)
+        print("Saving state for later continuation (please wait...)")
+        # Save the current state
+        state = {'maxlevel': maxlevel,
+                 'currentlevel': currentlevel,
+                 'root_url': root_url,
+                 'outfile': outfile,
+                 'dynamic_urls': dynamic_urls,
+                 'visited_urls': visited_urls,
+                 'printed_urls': printed_urls,
+                 }
+        f = open(dumpfile, "wb")
+        dump(state, f, protocol=-1)
+        f.close()
 

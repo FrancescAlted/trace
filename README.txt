@@ -31,7 +31,7 @@ For an usage help, type::
 When Ctrl-C is pressed, the state is saved (using pickle).  The script
 can be continued from the previously saved state by::
 
-  $ trace.py -continue
+  $ trace.py --continue
 
 
 Francesc Alted

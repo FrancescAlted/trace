@@ -72,6 +72,7 @@ class ReturnLinks(HTMLParser):
                     # probably incomplete)
                     if '?' in value: return
                     if '#' in value: return
+                    init_value = value
                     # Avoid external references
                     if ( value.startswith("http://") and
                          not value.startswith(root_url) ):
@@ -93,6 +94,7 @@ class ReturnLinks(HTMLParser):
                     if value not in visited_urls:
                         self.links.append(value)
                         visited_urls.append(value)
+                        print("init, final-->", init_value, value)
 
 
 def discover_links(url_):

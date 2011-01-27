@@ -122,13 +122,15 @@ def discover_links(url_):
         charset = "utf-8"
 
     # Feed the data in URL to ReturnLinks discoverer
-    rlinks.feed(data.decode(charset))
-    links = rlinks.links
+    links = []
     try:
+        rlinks.feed(data.decode(charset))
+        links.extend(rlinks.links)
         rlinks.close()
     except HTMLParseError:
         # Problems parsing the HTML data.  Give up.
         pass
+
     return links
 
 
